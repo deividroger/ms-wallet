@@ -1,12 +1,14 @@
 package createaccount
 
 import (
+	"fmt"
+
 	"github.com/deividroger/ms-wallet/src/internal/entity"
 	"github.com/deividroger/ms-wallet/src/internal/gateway"
 )
 
 type CreateAccountInputDto struct {
-	ClientID string
+	ClientID string `json:"client_id"`
 }
 
 type CreateAccountOutputDto struct {
@@ -27,6 +29,7 @@ func NewCreateAccountUseCase(a gateway.AccountGateway, c gateway.ClientGateway) 
 
 func (uc *CreateAccountUseCase) Execute(input CreateAccountInputDto) (*CreateAccountOutputDto, error) {
 	client, err := uc.ClientGateway.Get(input.ClientID)
+	fmt.Println(client)
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +37,9 @@ func (uc *CreateAccountUseCase) Execute(input CreateAccountInputDto) (*CreateAcc
 	account := entity.NewAccount(client)
 
 	err = uc.AccountGateway.Save(account)
+
 	if err != nil {
+
 		return nil, err
 	}
 

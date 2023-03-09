@@ -18,9 +18,10 @@ func (c *ClientDb) Get(id string) (*entity.Client, error) {
 
 	client := entity.Client{}
 
-	smt, err := c.DB.Prepare("SELECT id, name, email, created_at FROM clients WHERE id = ?")
+	smt, err := c.DB.Prepare("SELECT id, name, email, created_at FROM clients WHERE id = ? ")
 
 	if err != nil {
+
 		return nil, err
 	}
 
@@ -29,8 +30,10 @@ func (c *ClientDb) Get(id string) (*entity.Client, error) {
 	row := smt.QueryRow(id)
 
 	if err := row.Scan(&client.ID, &client.Name, &client.Email, &client.CreatedAt); err != nil {
+
 		return nil, err
 	}
+
 	return &client, nil
 }
 

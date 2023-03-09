@@ -19,9 +19,10 @@ type Client struct {
 func NewClient(name, email string) (*Client, error) {
 
 	client := &Client{
-		ID:    uuid.New().String(),
-		Name:  name,
-		Email: email,
+		ID:        uuid.New().String(),
+		Name:      name,
+		Email:     email,
+		CreatedAt: time.Now(),
 	}
 	err := client.Validate()
 

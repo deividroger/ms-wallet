@@ -48,7 +48,7 @@ func (t *Transaction) Validate() error {
 		return errors.New("amount must be greater than zero")
 	}
 
-	if t.AccountFrom.Balance <= t.Amount {
+	if t.AccountFrom.Balance < t.Amount {
 		return errors.New("insufficient funds")
 	}
 

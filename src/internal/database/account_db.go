@@ -31,8 +31,9 @@ func (a *AccountDB) FindById(id string) (*entity.Account, error) {
 								from accounts a 
 								inner join clients 
 							  c ON a.client_id = c.id 
-							  where  a.id = ?`)
+							  where  c.id = ?  `)
 	if err != nil {
+
 		return nil, err
 	}
 	defer smt.Close()
@@ -49,8 +50,10 @@ func (a *AccountDB) FindById(id string) (*entity.Account, error) {
 		&client.CreatedAt)
 
 	if err != nil {
+
 		return nil, err
 	}
+
 	return &account, nil
 }
 
