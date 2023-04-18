@@ -63,5 +63,4 @@ func (s *AccountDBTestSuite) TestFindById() {
 	s.Equal(account.Client.ID, accountDB.Client.ID)
 	s.Equal(account.Balance, accountDB.Balance)
 	s.Equal(account.Client.ID, accountDB.Client.ID)
-
 }
