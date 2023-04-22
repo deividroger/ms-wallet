@@ -5,14 +5,17 @@ import (
 	"database/sql"
 	"fmt"
 
+	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/deividroger/ms-wallet/src/internal/database"
 	event "github.com/deividroger/ms-wallet/src/internal/events"
+	"github.com/deividroger/ms-wallet/src/internal/events/handler"
 	createaccount "github.com/deividroger/ms-wallet/src/internal/usecase/create_account"
 	createclient "github.com/deividroger/ms-wallet/src/internal/usecase/create_client"
 	createtransaction "github.com/deividroger/ms-wallet/src/internal/usecase/create_transaction"
 	"github.com/deividroger/ms-wallet/src/internal/web"
 	"github.com/deividroger/ms-wallet/src/internal/web/webserver"
 	"github.com/deividroger/ms-wallet/src/pkg/events"
+	"github.com/deividroger/ms-wallet/src/pkg/kafka"
 	"github.com/deividroger/ms-wallet/src/pkg/uow"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -25,9 +28,20 @@ func main() {
 	}
 	defer db.Close()
 
+	configMap := ckafka.ConfigMap{
+		"bootstrap.servers": "kafka:29092",
+		"group.id":          "wallet",
+	}
+
+	kafkaProducer := kafka.NewKafkaProducer(&configMap)
+
 	eventDispatcher := events.NewEventDispatcher()
+
+	eventDispatcher.Register("TransactionCreated", handler.NewTransactionCreatedKafkaHandler(kafkaProducer))
+	eventDispatcher.Register("BalanceUpdated", handler.NewBalanceUpdatedKafkaHandler(kafkaProducer))
+
 	transactionCreatedEventHandler := event.NewTransactionCreated()
-	//eventDispatcher.Register("TransactionCreated", handler)
+	balanceUpdatedEventHandler := event.NewBalanceUpdated()
 
 	clientDb := database.NewClientDb(db)
 	accountDb := database.NewAccountDb(db)
@@ -46,9 +60,9 @@ func main() {
 
 	createClientUseCase := createclient.NewCreateClientUseCase(clientDb)
 	createAccountUseCase := createaccount.NewCreateAccountUseCase(accountDb, clientDb)
-	createTransactionUseCase := createtransaction.NewCreateTransactionUseCase(uow, eventDispatcher, transactionCreatedEventHandler)
+	createTransactionUseCase := createtransaction.NewCreateTransactionUseCase(uow, eventDispatcher, transactionCreatedEventHandler, balanceUpdatedEventHandler)
 
-	webserver := webserver.NewWebServer(":3000")
+	webserver := webserver.NewWebServer(":8080")
 
 	clientHandler := web.NewWebClientHandler(*createClientUseCase)
 	accountHandler := web.NewWebAccountHandler(*createAccountUseCase)
@@ -58,6 +72,7 @@ func main() {
 	webserver.AddHandler("/accounts", accountHandler.CreateAccount)
 	webserver.AddHandler("/transactions", transactionHandler.CreateTransaction)
 
+	fmt.Println("Server is running")
 	webserver.Start()
 
 }

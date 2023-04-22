@@ -1,4 +1,10 @@
-FROM mcr.microsoft.com/devcontainers/go:0-1.20
+FROM golang:1.20
+
+WORKDIR /app/
+
+RUN apt-get update && apt-get install -y librdkafka-dev
+
+CMD ["tail","-f","/dev/null"]
 
 # [Optional] Uncomment this section to install additional OS packages.
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
